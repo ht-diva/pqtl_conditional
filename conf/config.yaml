@@ -5,7 +5,7 @@ sumstats_path:  conf/meta_loci_chr2122.txt
 workspace_path: "results/validate_geno"
 
 labels:
-  chr_label: "CHR"
+  chr_label: "'##CHR'"
   pos_label: "POS"
   snpid_label: "SNPID"
   ea_label: "EA"
