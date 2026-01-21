@@ -1,23 +1,21 @@
-# pqtl_pipeline_finemap
-Fine mapping analysis within the pQTL pipeline project at Human Technopole, Milan, Italy
+## COJO-Conditional analysis Workflow for Protein QTLs 
 
-We started this analysis pipeline in early April 2024. We adopted the Next-Flow (NF) pipeline developed by the Statistical Genomics team at Human Technopole and deployed it in Snakemake (SMK). We independtly validated each of the multiple analyses stated below before incorporating it in SMK.
-
+We started to reimplement this pipeline on protein QTLs in early April, 2024. This workflow was primarily developed in Next-Flow (NF) by the Genomics Team at Human Technopole. We adopted, deployed, and validated it in Snakemake (SMK).
 
 ### Locus Breaker
 
-We incorporated **Locus Breaker (LB)** function written in R (see publication PMID:) for example meta-analysis GWAS results of the proteins and we deployed it in SMK in mid April 2024.
+We incorporated **Locus Breaker (LB)** function (see [publication](https://pubmed.ncbi.nlm.nih.gov/37173304/)) in SMK and deployed it on our protein meta-analysis GWAS results in mid April 2024.
 
 
 ### COJO Conditional Analysis
 Once running the pipeline, `rule run_cojo` will generate output files below:
 - list of independent variants resulted from GCTA cojo-slct (TSV/CSV)
 - conditional dataset for each independent signal resulted from GCTA cojo-cond (RDS)
-- fine-mapping results using coloc::coloc.ABF function, containing values such as l-ABF, posterior probabilities (PPI) for each variant (RDS)
+- fine-mapping results using `coloc::coloc.ABF()` function, containing values such as l-ABF, posterior probabilities (PPI) for each variant (RDS)
 - colocalization info table containing credible set variants (with cumulative PPI > 0.99) for each independent variant
 - regional association plots
 
-These outputs are going to be stored in `workspace_path` provided by the user in config_finemap.yaml and stored in such directory:
+These outputs are going to be stored in `workspace_path` provided by the user in `config.yaml` and stored in such directory:
 <workspace_path>/results/*/cojo/<seqid>
 
 
@@ -30,19 +28,25 @@ We also incorporated new features such as exclusion of signals in *HLA* and *NLR
 
 
 ### NOTE
-This SMK pipeline which is designed for pQTLs project **does not** include munging and alignment of input GWAS summary files. Therefore, it is a MUST to have your GWAS results completely harmonized by your genotype data. Eg. variants IDs, refrence/alternate (effect/other) alleles should be concordant across your input files. Our GWAS summary stats from REGENIE are already aligned with QC pipeline (adopted by GWASLab) developed by pQTL analysts team at Health Data Science Center.
+This SMK pipeline which is designed for pQTLs project **does not** include munging and alignment of input GWAS summary files. Therefore, it is a MUST to have your GWAS results completely harmonized by your genotype data. Eg. variants IDs, reference/alternate (effect/other) alleles should be concordant across your input files. Our GWAS summary stats from REGENIE are already aligned with QC pipeline (adopted by GWASLab) developed by pQTL analysts team at Health Data Science Center.
 
 
 ### How to run the pipeline:
-You can use the default configuration file in config/config_finemap.yaml. Otherwise, prepare your configuration in config/ folder. Then, make sure that `configfile` in workflow/Snakefile matches with your newly created config file name. Then, run the pipeline by typing below command in bash.
+You can use the default configuration file in `config/config.yaml`. Otherwise, prepare your configuration in `config/` folder. Then, make sure that `configfile` variable in `workflow/Snakefile` matches with your newly created config file name. Then, run the pipeline by typing below command in bash.
 
 ```bash
 sbatch submit.sh
 ```
 
 ### Not interested to run colocalization?
-If you want to **skip running colocalization** with your traits, uncomment this `#--until collect_credible_sets` in Makefile. If you want to skip both COJO and colocalization and only run locus breaker, then change previous option in Makefile to `--until collect_loci` and run the pipeline as mentioned before.
+If you want to **skip running colocalization** between your traits, there is a parameter in config file. If you want to skip both COJO and colocalization and only run locus breaker, then change previous option in Makefile to `--until collect_loci` and run the pipeline as mentioned before.
 
-## Workflow example
+config.yaml:
+```
+run_coloc: False
+```
+
+
+### Workflow example
 
 <img src="dag.svg" alt="example workflow">
