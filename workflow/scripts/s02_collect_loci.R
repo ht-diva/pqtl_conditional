@@ -5,6 +5,21 @@ library(data.table)
 library(dplyr)
 
 #----------#
+# Get log path from Snakemake, fallback if missing
+log_file <- tryCatch(snakemake@log[[1]], error = function(e) "logs/collect_loci/default.log")
+
+# Ensure the directory exists
+dir.create(dirname(log_file), recursive = TRUE, showWarnings = FALSE)
+
+# Redirect stdout and stderr to the log file
+log_con <- file(log_file, open = "wt")
+sink(log_con, type = "output")   # redirect stdout
+sink(log_con, type = "message")  # redirect messages / stderr
+
+start_time <- Sys.time()
+start_time
+
+#----------#
 # taking variants file as input
 args <- commandArgs(trailingOnly = TRUE)
 loci_path <- snakemake@input
@@ -39,7 +54,7 @@ if (build == "37") {
   nlrp12.end   <- 54360000
   hla.start <- 28477797
   hla.end   <- 33448354
-  cat("\nTo filter MHC and NLRP12 regions, genomic positions are set in build", build, "\n")
+  message("To filter MHC and NLRP12 regions, genomic positions are set in build ", build)
 } else if (build == "38") {
   # Using liftover.broadinstitute.org resulted in: chr19:53816370-53836078, then expanded it for 20kb
   nlrp12.start <- 53796000
@@ -47,7 +62,7 @@ if (build == "37") {
   # MHC region maps to chr6:28,510,120-33,480,577 in GRCh38 coordinates.
   hla.start <- 28510120
   hla.end   <- 33480577
-  cat("\nTo filter MHC and NLRP12 regions, genomic positions are set in build", build, "\n")
+  message("To filter MHC and NLRP12 regions, genomic positions are set in build ", build)
 }
 
 
@@ -59,18 +74,16 @@ ex_mhc <- loci %>%
 # remove signals overlapping NLRP12 region
 if (nlrp12) {
   ex_nlrp12 <- ex_mhc %>% filter(!(chr == 19 & (POS > nlrp12.start & POS < nlrp12.end)))
-  cat("Removing lead SNPs in NLRP12 region.\n")
+  message("Removing lead SNPs in NLRP12 region.")
 } else {
   ex_nlrp12 <- ex_mhc
-  cat("Skipping filter on NLRP12 region.\n")
+  message("Skipping filter on NLRP12 region.")
 }
 
-cat(
-  "\nOf total", nrow(loci), 
-  "loci,", nrow(loci) - nrow(ex_mhc),
-  "loci belonging to MHC and", nrow(ex_nlrp12) - nrow(ex_mhc),
-  "loci belonging to NLRP12 regions were removed.\n"
-  )
+message(nrow(loci), " loci have been identified in total.")
+message(nrow(loci) - nrow(ex_mhc), " loci have been removed after filtering MHC region.")
+message(nrow(ex_mhc) - nrow(ex_nlrp12), " loci have been removed after filtering NLRP12 region.")
+message(nrow(ex_nlrp12), " loci remained in the final list.")
 
 
 #-------------------------------------#
@@ -93,3 +106,16 @@ loci_final <- ex_nlrp12 %>%
 #--------------#
 # save the joint results
 write.csv(loci_final, file = file_path, quote = F, row.names = F)
+
+#--------------#
+# Report run time
+end_time <- Sys.time()
+elapsed_time <- end_time - start_time
+end_time
+
+message("Run time: ", round(as.numeric(elapsed_time, units="mins"), 3), " minutes\n")
+
+# Reset sinks at the end
+sink(type = "message")
+sink(type = "output")
+close(log_con)

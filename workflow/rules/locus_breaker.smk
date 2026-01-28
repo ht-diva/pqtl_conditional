@@ -47,6 +47,8 @@ rule collect_loci:
     params:
         NLRP12=config.get("NLRP12"),
         build=config.get("build")
+    log:
+        ws_path("logs/collect_loci/report.log"),
     resources:
         runtime=lambda wc, attempt: attempt * 120,
     script:
