@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name verify_geno
-#SBATCH --output %j_verify_geno.log
+#SBATCH --job-name combine
+#SBATCH --output %j_combine_loci.log
 #SBATCH --partition cpuq
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 4G
