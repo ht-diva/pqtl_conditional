@@ -31,21 +31,33 @@ We also incorporated new features such as exclusion of signals in *HLA* and *NLR
 This SMK pipeline which is designed for pQTLs project **does not** include munging and alignment of input GWAS summary files. Therefore, it is a MUST to have your GWAS results completely harmonized by your genotype data. Eg. variants IDs, reference/alternate (effect/other) alleles should be concordant across your input files. Our GWAS summary stats from REGENIE are already aligned with QC pipeline (adopted by GWASLab) developed by pQTL analysts team at Health Data Science Center.
 
 
-### How to run the pipeline:
+### How to run the pipeline
 You can use the default configuration file in `config/config.yaml`. Otherwise, prepare your configuration in `config/` folder. Then, make sure that `configfile` variable in `workflow/Snakefile` matches with your newly created config file name. Then, run the pipeline by typing below command in bash.
 
 ```bash
 sbatch submit.sh
 ```
 
-### Not interested to run colocalization?
-If you want to **skip running colocalization** between your traits, there is a parameter in config file. If you want to skip both COJO and colocalization and only run locus breaker, then change previous option in Makefile to `--until collect_loci` and run the pipeline as mentioned before.
+### Select what to run
+Available options:
+- locus_breaker
+- cojo_conditional
+- coloc
 
-config.yaml:
+If you like to run only locus breaker and **skip running cojo-conditional analyses and colocalization** between your traits, set this parameter in `conf/config.yaml` as follows:
 ```
-run_coloc: False
+run: locus_breaker
 ```
 
+If you want to run COJO-Conditional analyses and **skip running colocalization** between your traits, set this parameter in `conf/config.yaml` as follows:
+```
+run: cojo_conditional
+```
+
+If you desire to run all the above analyses including colocalization, set this parameter in `conf/config.yaml` as follows:
+```
+run: coloc
+```
 
 ### Workflow example
 
