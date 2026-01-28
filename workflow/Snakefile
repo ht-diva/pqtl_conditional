@@ -21,17 +21,28 @@ include: "rules/coloc.smk"
 include: "rules/return_config.smk"
 
 
-if config.get("run_coloc"):
-    rule all:
-        input:
-            rules.collect_loci.output[0],
-            rules.collect_conditionals.output.ofile,
-            expand(ws_path("coloc/chr{chr_cs}_colocalization.table.all.tsv"), chr_cs = range(1,23)),
-            ws_path("config/config_used.yaml")
+def rule_all_inputs():
+    inputs = []
+    # Always run locus breaker
+    inputs.append(rules.collect_loci.output[0])
+    run_mode = config["run"]
 
-else:
-    rule all:
-        input:
-            rules.collect_loci.output[0],
-            rules.collect_conditionals.output.ofile,
-            ws_path("config/config_used.yaml")
+    if run_mode in ["cojo_conditional", "coloc"]:
+        inputs.append(rules.collect_conditionals.output.ofile)
+
+    if run_mode == "coloc":
+        inputs.extend(
+            expand(
+                ws_path("coloc/chr{chr_cs}_colocalization.table.all.tsv"),
+                chr_cs=range(1, 23)
+            )
+        )
+
+    # Always track used config
+    inputs.append(ws_path("config/config_used.yaml"))
+    return inputs
+
+
+rule all:
+    input:
+        rule_all_inputs()
