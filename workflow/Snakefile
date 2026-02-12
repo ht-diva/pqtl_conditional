@@ -6,7 +6,17 @@ from snakemake.utils import min_version
 min_version("8.4.1")
 
 
-containerized: "docker://ghcr.io/ht-diva/pqtl_pipeline_finemap:44f3df5"
+# ***** Transfer marginal GWAS results to MVP *****
+# 1. Subset gwas for a given seqid_locus pair
+#   - save also variants list for later genotype extraction
+# 2. Lift positions in GWAS to GRCh38
+#   - save SNPs in the region in a VCF file
+#   - execute genomic liftover using bcftools plugin
+#   - save lifted positions in TXT format
+# 3. Compute allele frequencies (AFs) from INTERVAL genotypes
+#   - use variants list to extract AF for variants in the region 
+# 4. Reframe sumstat in a MVP-requested structure
+#   - merge all files including AFs, lifted positions with the extracted regions
 
 
 # read the configuration file
@@ -15,34 +25,16 @@ config_copy = "conf/config.yaml"
 
 
 include: "rules/common.smk"
-include: "rules/locus_breaker.smk"
-include: "rules/cojo.smk"
-include: "rules/coloc.smk"
+include: "rules/subset_gwas.smk"
+include: "rules/run_liftover.smk"
+include: "rules/recompute_freq.smk"
+include: "rules/reformat_gwas.smk"
+include: "rules/combine_reports.smk"
 include: "rules/return_config.smk"
 
-
-def rule_all_inputs():
-    inputs = []
-    # Always run locus breaker
-    inputs.append(rules.collect_loci.output[0])
-    run_mode = config["run"]
-
-    if run_mode in ["cojo_conditional", "coloc"]:
-        inputs.append(rules.collect_conditionals.output.ofile)
-
-    if run_mode == "coloc":
-        inputs.extend(
-            expand(
-                ws_path("coloc/chr{chr_cs}_colocalization.table.all.tsv"),
-                chr_cs=range(1, 23)
-            )
-        )
-
-    # Always track used config
-    inputs.append(ws_path("config/config_used.yaml"))
-    return inputs
 
 
 rule all:
     input:
-        rule_all_inputs()
+        #expand(ws_path("report/{locuseq}.report"), locuseq = my_lb.locuseq),
+        rules.combine_reports.output.combined
