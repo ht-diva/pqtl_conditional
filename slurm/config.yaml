@@ -16,6 +16,7 @@ keep-going: True
 rerun-incomplete: True
 printshellcmds: True
 scheduler: ilp
+slurm-keep-successful-logs: True
 
 default-resources:
     slurm_partition: cpuq
@@ -25,23 +26,18 @@ default-resources:
     runtime: attempt * 5
 
 set-resources:
-    break_locus:
-        mem_mb: 8000 + attempt * 2048
-    collect_loci:
-        mem_mb: 8000 + attempt * 2048
-    run_cojo:
-        mem_mb: 8000 + attempt * 2048
+    subset_gwas:
+        mem_mb: 512 + attempt * 1024
         threads: *cores
-    collect_credible_sets:
-        mem_mb: 8000 + attempt * 2048
-        disk_mb: 8000 + attempt * 2048
-    master_file:
-        mem_mb: 4000 + attempt * 2048
+    convert_to_vcf:
+        mem_mb: 512 + attempt * 1024
+    liftover_vcf:
+        mem_mb: 512 + attempt * 512
         threads: *cores
-    merry_go_round:
-        mem_mb: 4000 + attempt * 2048
+    compute_maf:
+        mem_mb: 2048 + attempt * 1024
         threads: *cores
-    run_coloc:
-        mem_mb: 16000 + attempt * 60048
-        disk_mb: 8000 + attempt * 2048
-        threads: *cores
+    reformat_sumstat:
+        mem_mb: 512 + attempt * 1024
+    combine_reports:
+        mem_mb: 512 + attempt * 1024
