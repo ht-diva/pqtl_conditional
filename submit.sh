@@ -1,7 +1,7 @@
 #!/bin/bash
 
-#SBATCH --job-name combine
-#SBATCH --output %j_combine_loci.log
+#SBATCH --job-name mvp
+#SBATCH --output %j_mvp.log
 #SBATCH --partition cpuq
 #SBATCH --cpus-per-task 1
 #SBATCH --mem 4G
