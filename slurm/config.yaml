@@ -16,6 +16,7 @@ keep-going: True
 rerun-incomplete: True
 printshellcmds: True
 scheduler: ilp
+slurm-keep-successful-logs: True
 
 default-resources:
     slurm_partition: cpuq
